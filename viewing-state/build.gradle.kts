@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.felipearpa.viewingstate"
+    namespace = "com.felipearpa.ui.state"
     compileSdk = projectCompileSdk.toInt()
     defaultConfig {
         minSdk = projectMinSdk.toInt()

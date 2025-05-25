@@ -1,4 +1,4 @@
-package com.felipearpa.viewingstate
+package com.felipearpa.ui.state
 
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
