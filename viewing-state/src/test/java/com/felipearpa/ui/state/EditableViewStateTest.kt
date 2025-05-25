@@ -1,4 +1,4 @@
-package com.felipearpa.viewingstate
+package com.felipearpa.ui.state
 
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
