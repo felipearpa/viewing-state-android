@@ -11,7 +11,6 @@ android {
     compileSdk = projectCompileSdk.toInt()
     defaultConfig {
         minSdk = projectMinSdk.toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
     buildTypes {

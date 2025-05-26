@@ -3,15 +3,47 @@ package com.felipearpa.ui.state
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
+/**
+ * Represents the different states of a view that edits data.
+ *
+ * @param Value The type of data that the view edits.
+ */
 sealed class EditableViewState<out Value : Any> {
+    /**
+     * Represents the initial state of the view, before any data has been edited.
+     *
+     * @param Value The type of data that the view edits.
+     * @property value The initial data value.
+     */
     data class Initial<Value : Any>(val value: Value) : EditableViewState<Value>()
 
+    /**
+     * Represents the loading state of the view, indicating that data is currently being edited.
+     *
+     * @param Value The type of data that the view edits.
+     * @property current The current data value.
+     * @property target The target data value to be edited.
+     */
     data class Loading<Value : Any>(val current: Value, val target: Value) :
         EditableViewState<Value>()
 
+    /**
+     * Represents the successful state of editing data.
+     *
+     * @param Value The type of data that the view edits.
+     * @property old The original data value before editing.
+     * @property succeeded The edited data value.
+     */
     data class Success<Value : Any>(val old: Value, val succeeded: Value) :
         EditableViewState<Value>()
 
+    /**
+     * Represents the failure state of the view, containing an exception.
+     *
+     * @param Value The type of data that the view edits.
+     * @property current The current data value.
+     * @property failed The failed data value.
+     */
     data class Failure<Value : Any>(
         val current: Value,
         val failed: Value,
@@ -19,6 +51,12 @@ sealed class EditableViewState<out Value : Any> {
     ) : EditableViewState<Value>()
 }
 
+/**
+ * Checks if the current state is [EditableViewState.Initial].
+ *
+ * @param Value The type of data that the view edits.
+ * @return `true` if the state is [EditableViewState.Initial], `false` otherwise.
+ */
 @OptIn(ExperimentalContracts::class)
 fun <Value : Any> EditableViewState<Value>.isInitial(): Boolean {
     contract {
@@ -28,6 +66,12 @@ fun <Value : Any> EditableViewState<Value>.isInitial(): Boolean {
     return this is EditableViewState.Initial
 }
 
+/**
+ * Checks if the current state is [EditableViewState.Loading].
+ *
+ * @param Value The type of data that the view edits.
+ * @return `true` if the state is [EditableViewState.Loading], `false` otherwise.
+ */
 @OptIn(ExperimentalContracts::class)
 fun <Value : Any> EditableViewState<Value>.isLoading(): Boolean {
     contract {
@@ -37,6 +81,12 @@ fun <Value : Any> EditableViewState<Value>.isLoading(): Boolean {
     return this is EditableViewState.Loading
 }
 
+/**
+ * Checks if the current state is [EditableViewState.Success].
+ *
+ * @param Value The type of data that the view edits.
+ * @return `true` if the state is [EditableViewState.Success], `false` otherwise.
+ */
 @OptIn(ExperimentalContracts::class)
 fun <Value : Any> EditableViewState<Value>.isSuccess(): Boolean {
     contract {
@@ -46,6 +96,12 @@ fun <Value : Any> EditableViewState<Value>.isSuccess(): Boolean {
     return this is EditableViewState.Success
 }
 
+/**
+ * Checks if the current state is [EditableViewState.Failure].
+ *
+ * @param Value The type of data that the view edits.
+ * @return `true` if the state is [EditableViewState.Failure], `false` otherwise.
+ */
 @OptIn(ExperimentalContracts::class)
 fun <Value : Any> EditableViewState<Value>.isFailure(): Boolean {
     contract {
@@ -55,6 +111,13 @@ fun <Value : Any> EditableViewState<Value>.isFailure(): Boolean {
     return this is EditableViewState.Failure
 }
 
+/**
+ * Executes the given [block] if the current state is [EditableViewState.Initial].
+ *
+ * @param Value The type of data that the view edits.
+ * @param block The block of code to execute.
+ * @return The original [EditableViewState] instance.
+ */
 fun <Value : Any> EditableViewState<Value>.onInitial(block: (value: Value) -> Unit): EditableViewState<Value> {
     if (this.isInitial()) {
         block(this.value)
@@ -62,6 +125,13 @@ fun <Value : Any> EditableViewState<Value>.onInitial(block: (value: Value) -> Un
     return this
 }
 
+/**
+ * Executes the given [block] if the current state is [EditableViewState.Loading].
+ *
+ * @param Value The type of data that the view edits.
+ * @param block The block of code to execute.
+ * @return The original [EditableViewState] instance.
+ */
 fun <Value : Any> EditableViewState<Value>.onLoading(block: (current: Value, target: Value) -> Unit): EditableViewState<Value> {
     if (this.isLoading()) {
         block(this.current, this.target)
@@ -69,6 +139,13 @@ fun <Value : Any> EditableViewState<Value>.onLoading(block: (current: Value, tar
     return this
 }
 
+/**
+ * Executes the given [block] if the current state is [EditableViewState.Success].
+ *
+ * @param Value The type of data that the view edits.
+ * @param block The block of code to execute.
+ * @return The original [EditableViewState] instance.
+ */
 fun <Value : Any> EditableViewState<Value>.onSuccess(block: (old: Value, succeeded: Value) -> Unit): EditableViewState<Value> {
     if (this.isSuccess()) {
         block(this.old, this.succeeded)
@@ -76,6 +153,13 @@ fun <Value : Any> EditableViewState<Value>.onSuccess(block: (old: Value, succeed
     return this
 }
 
+/**
+ * Executes the given [block] if the current state is [EditableViewState.Failure].
+ *
+ * @param Value The type of data that the view edits.
+ * @param block The block of code to execute.
+ * @return The original [EditableViewState] instance.
+ */
 fun <Value : Any> EditableViewState<Value>.onFailure(block: (current: Value, failed: Value, exception: Throwable) -> Unit): EditableViewState<Value> {
     if (this.isFailure()) {
         block(this.current, this.failed, this.exception)
@@ -83,6 +167,12 @@ fun <Value : Any> EditableViewState<Value>.onFailure(block: (current: Value, fai
     return this
 }
 
+/**
+ * Returns the value if the current state is [EditableViewState.Success], or `null` otherwise.
+ *
+ * @param Value The type of data that the view edits.
+ * @return The value if the state is [EditableViewState.Success], `null` otherwise.
+ */
 fun <Value : Any> EditableViewState<Value>.exceptionOrNull(): Throwable? {
     return when (this) {
         is EditableViewState.Failure -> this.exception
@@ -90,6 +180,12 @@ fun <Value : Any> EditableViewState<Value>.exceptionOrNull(): Throwable? {
     }
 }
 
+/**
+ * Returns the value if the current state is [EditableViewState.Success], or throws an [IllegalStateException] otherwise.
+ *
+ * @param Value The type of data that the view edits.
+ * @return The value if the state is [EditableViewState.Success], or throws an [IllegalStateException] otherwise.
+ */
 fun <Value : Any> EditableViewState<Value>.relevantValue() =
     when (this) {
         is EditableViewState.Initial -> this.value
