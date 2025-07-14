@@ -4,6 +4,7 @@ val projectMinSdk: String by project
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.mavenPublish)
 }
 
 android {
@@ -65,4 +66,21 @@ dependencies {
     testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.kotest.property)
     testRuntimeOnly(libs.bundles.junit5.runtime)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.felipearpa"
+            artifactId = "viewing-state"
+            version = "0.0.1-SNAPSHOT"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
