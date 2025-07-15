@@ -202,3 +202,45 @@ fun <Value : Any> LoadableViewState<Value>.exceptionOrThrow(): Throwable {
         return this.invoke()
     throw IllegalStateException("Expected exception in Failure state but not found")
 }
+
+/**
+ * Maps the value of the [LoadableViewState] to a new value of type [NewValue].
+ *
+ * @param Value The type of data that the view loads.
+ * @param NewValue The type of data that the view loads.
+ * @param block The function to apply to the value.
+ * @return A new [LoadableViewState] with the mapped value.
+ */
+inline fun <Value : Any, NewValue : Any> LoadableViewState<Value>.map(block: (value: Value) -> NewValue): LoadableViewState<NewValue> {
+    return when (this) {
+        LoadableViewState.Initial -> LoadableViewState.Initial
+        LoadableViewState.Loading -> LoadableViewState.Loading
+        is LoadableViewState.Success -> LoadableViewState.Success(block(value))
+        is LoadableViewState.Failure -> LoadableViewState.Failure(exception)
+    }
+}
+
+/**
+ * Folds the [LoadableViewState] into a new value of type [NewValue].
+ *
+ * @param Value The type of data that the view loads.
+ * @param NewValue The type of data that the view loads.
+ * @param onInitial The function to apply to the initial state.
+ * @param onLoading The function to apply to the loading state.
+ * @param onSuccess The function to apply to the success state.
+ * @param onFailure The function to apply to the failure state.
+ * @return A new value of type [NewValue].
+ */
+inline fun <Value : Any, NewValue> LoadableViewState<Value>.fold(
+    onInitial: () -> NewValue,
+    onLoading: () -> NewValue,
+    onSuccess: (value: Value) -> NewValue,
+    onFailure: (throwable: Throwable) -> NewValue,
+): NewValue {
+    return when (this) {
+        LoadableViewState.Initial -> onInitial()
+        LoadableViewState.Loading -> onLoading()
+        is LoadableViewState.Success -> onSuccess(value)
+        is LoadableViewState.Failure -> onFailure(exception)
+    }
+}
