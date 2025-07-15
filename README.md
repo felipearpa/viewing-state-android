@@ -427,6 +427,82 @@ val state = LoadableViewState.Success(Unit)
 state.exceptionOrThrow() // Throws IllegalStateException
 ```
 
+#### `map(block: (value: Value) -> NewValue)`
+
+Maps the value of the `LoadableViewState` to a new value of type `NewValue`.
+
+```kotlin
+val state = LoadableViewState.Success("value")
+val newState = state.map { it.length }
+print(newState)
+```
+
+```kotlin
+val state = LoadableViewState.Initial
+val newState = state.map { it.length }
+print(newState)
+```
+
+```kotlin
+val state = LoadableViewState.Loading
+val newState = state.map { it.length }
+print(newState)
+```
+
+```kotlin
+val state = LoadableViewState.Failure(RuntimeException())
+val newState = state.map { it.length }
+print(newState)
+```
+
+#### `fold(onInitial: () -> NewValue, onLoading: () -> NewValue, onSuccess: (value: Value) -> NewValue, onFailure: (throwable: Throwable) -> NewValue)`
+
+Folds the `LoadableViewState` into a new value of type `NewValue`.
+
+```kotlin
+val state = LoadableViewState.Initial
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onLoading = { "Loading state" },
+    onSuccess = { value -> "Success state with value: $value" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result)
+```
+
+```kotlin
+val state = LoadableViewState.Loading
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onLoading = { "Loading state" },
+    onSuccess = { value -> "Success state with value: $value" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result)
+```
+
+```kotlin
+val state = LoadableViewState.Success("value")
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onLoading = { "Loading state" },
+    onSuccess = { value -> "Success state with value: $value" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result)
+```
+
+```kotlin
+val state = LoadableViewState.Failure(RuntimeException("Error message"))
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onLoading = { "Loading state" },
+    onSuccess = { value -> "Success state with value: $value" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result)
+```
+
 ### `EditableViewState<Value>`
 
 Represents the different states involved in editing data of type Value.
