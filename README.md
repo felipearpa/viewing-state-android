@@ -1,8 +1,9 @@
 # viewing-state-android
 
-The **viewing-state-android** package provides classes like `LoadableViewState` and
-`EditableViewState` to handle common view state transitions.
+The **viewing-state-android** package provides classes like `LoadableViewState`, 
+`SavableViewState`, and `EditableViewState` to handle common view state transitions.
 `LoadableViewState` manages four states: initial, loading, success, and failure,
+`SavableViewState` manages four states: initial, saving, success, and failure,
 while `EditableViewState` extends this functionality allowing granular control over state changes.
 
 ## Why
@@ -500,6 +501,246 @@ val result = state.fold(
     onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
 )
 print(result)
+```
+
+### `SavableViewState<Value>`
+
+Represents the different states involved in saving data of type Value.
+
+#### `Initial`
+
+Represents the initial state of the view, before any data has been saved.
+
+```kotlin
+val initialState = SavableViewState.Initial
+```
+
+#### `Saving<Value>`
+
+Represents the saving state of the view, indicating that data is currently being stored or processed.
+
+```kotlin
+val savingState = SavableViewState.Saving("value")
+```
+
+#### `Success`
+
+Represents the successful state of saving data.
+
+```kotlin
+val successState = SavableViewState.Success
+```
+
+#### `Failure`
+
+Represents the failure state of the view, containing an exception.
+
+```kotlin
+val failureState = SavableViewState.Failure(RuntimeException())
+```
+
+#### `isInitial()`
+
+Checks if the current state is `SavableViewState.Initial`.
+
+```kotlin
+val state = SavableViewState.Initial
+state.isInitial() // Output: true
+```
+
+#### `isSaving()`
+
+Checks if the current state is `SavableViewState.Saving`.
+
+```kotlin
+val state = SavableViewState.Saving("value")
+state.isSaving() // Output: true
+```
+
+#### `isSuccess()`
+
+Checks if the current state is `SavableViewState.Success`.
+
+```kotlin
+val state = SavableViewState.Success
+state.isSuccess() // Output: true
+```
+
+#### `isFailure()`
+
+Checks if the current state is `SavableViewState.Failure`.
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+state.isFailure() // Output: true
+```
+
+#### `onInitial(block: () -> Unit)`
+
+Executes the given `block` if the current state is `SavableViewState.Initial`.
+
+```kotlin
+val state = SavableViewState.Initial
+state.onInitial { println("Initial state reached") } // Output: Initial state reached
+```
+
+#### `onSaving(block: (Value) -> Unit)`
+
+Executes the given `block` if the current state is `SavableViewState.Saving`.
+
+```kotlin
+val state = SavableViewState.Saving("value")
+state.onSaving { value -> println("Saving state reached with value: $value") } // Output: Saving state reached with value: value
+```
+
+#### `onSuccess(block: () -> Unit)`
+
+Executes the given `block` if the current state is `SavableViewState.Success`.
+
+```kotlin
+val state = SavableViewState.Success
+state.onSuccess { println("Success state reached") } // Output: Success state reached
+```
+
+#### `onFailure(block: (throwable: Throwable) -> Unit)`
+
+Executes the given `block` if the current state is `SavableViewState.Failure`.
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+state.onFailure { throwable -> println("Failure state reached with exception: ${throwable.message}") } // Output: Failure state reached with exception: null
+```
+
+#### `valueOrNull()`
+
+Returns the value if the current state is `SavableViewState.Saving`, or `null` otherwise.
+
+```kotlin
+val state = SavableViewState.Saving("value")
+state.valueOrNull() // Output: value
+```
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+state.valueOrNull() // Output: null
+```
+
+#### `valueOrThrow()`
+
+Returns the value if the current state is `SavableViewState.Saving`, or throws an `IllegalStateException` otherwise.
+
+```kotlin
+val state = SavableViewState.Saving("value")
+state.valueOrThrow() // Output: value
+```
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+state.valueOrThrow() // Throws IllegalStateException
+```
+
+#### `exceptionOrNull()`
+
+Returns the exception if the current state is `SavableViewState.Failure`, or `null` otherwise.
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+state.exceptionOrNull() // Output: RuntimeException
+```
+
+```kotlin
+val state = SavableViewState.Success
+state.exceptionOrNull() // Output: null
+```
+
+#### `exceptionOrThrow()`
+
+Returns the exception if the current state is `SavableViewState.Failure`, or throws an `IllegalStateException` otherwise.
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+state.exceptionOrThrow() // Output: RuntimeException
+```
+
+```kotlin
+val state = SavableViewState.Success
+state.exceptionOrThrow() // Throws IllegalStateException
+```
+
+#### `map(block: (value: Value) -> NewValue)`
+
+Maps the value of the `SavableViewState` to a new value of type `NewValue`.
+
+```kotlin
+val state = SavableViewState.Saving("value")
+val newState = state.map { it.length }
+print(newState) // Output: Saving(value=5)
+```
+
+```kotlin
+val state = SavableViewState.Initial
+val newState = state.map { it.length }
+print(newState) // Output: Initial
+```
+
+```kotlin
+val state = SavableViewState.Success
+val newState = state.map { it.length }
+print(newState) // Output: Success
+```
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException())
+val newState = state.map { it.length }
+print(newState) // Output: Failure(exception=java.lang.RuntimeException)
+```
+
+#### `fold(onInitial: () -> NewValue, onSaving: (value: Value) -> NewValue, onSuccess: () -> NewValue, onFailure: (throwable: Throwable) -> NewValue)`
+
+Folds the `SavableViewState` into a new value of type `NewValue`.
+
+```kotlin
+val state = SavableViewState.Initial
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onSaving = { value -> "Saving state with value: $value" },
+    onSuccess = { "Success state" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result) // Output: Initial state
+```
+
+```kotlin
+val state = SavableViewState.Saving("value")
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onSaving = { value -> "Saving state with value: $value" },
+    onSuccess = { "Success state" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result) // Output: Saving state with value: value
+```
+
+```kotlin
+val state = SavableViewState.Success
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onSaving = { value -> "Saving state with value: $value" },
+    onSuccess = { "Success state" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result) // Output: Success state
+```
+
+```kotlin
+val state = SavableViewState.Failure(RuntimeException("Error message"))
+val result = state.fold(
+    onInitial = { "Initial state" },
+    onSaving = { value -> "Saving state with value: $value" },
+    onSuccess = { "Success state" },
+    onFailure = { throwable -> "Failure state with exception: ${throwable.message}" }
+)
+print(result) // Output: Failure state with exception: Error message
 ```
 
 ### `EditableViewState<Value>`
