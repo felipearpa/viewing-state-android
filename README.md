@@ -77,7 +77,6 @@ fun MyScreen(viewModel: MyViewModel = viewModel()) {
         }
     }
 }
-}
 ```
 
 EditableViewState provides a clear and structured way to manage the state of data that can be edited
@@ -102,7 +101,7 @@ class ProfileViewModel : ViewModel() {
 
             val targetProfile = UserProfile(newName)
             _state.value =
-                EditableViewState.Loading(current = currentUserProfile, target = targetProfile)
+                EditableViewState.Saving(current = currentUserProfile, target = targetProfile)
 
             try {
                 // Simulate a network call or save operation
@@ -157,7 +156,7 @@ fun ProfileEditScreen(viewModel: ProfileViewModel = viewModel()) {
 
         val currentDisplayName = when (val state = viewModelState) {
             is EditableViewState.Initial -> state.value.displayName
-            is EditableViewState.Loading -> "Updating to: ${state.target.displayName}..."
+            is EditableViewState.Saving -> "Updating to: ${state.target.displayName}..."
             is EditableViewState.Success -> state.succeeded.displayName
             is EditableViewState.Failure -> "Failed to update to: ${state.failed.displayName} (was: ${state.current.displayName})"
         }
@@ -171,13 +170,13 @@ fun ProfileEditScreen(viewModel: ProfileViewModel = viewModel()) {
             isError = viewModelState.isFailure()
         )
 
-        val isLoading = viewModelState.isLoading()
+        val isSaving = viewModelState.isSaving()
 
         Button(
             onClick = { viewModel.updateDisplayName(editingName) },
-            enabled = !isLoading && editingName.isNotBlank()
+            enabled = !isSaving && editingName.isNotBlank()
         ) {
-            if (isLoading) {
+            if (isSaving) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(8.dp))
                 Text("Saving...")
@@ -439,12 +438,12 @@ Represents the initial state of the view, before any changes have been made.
 val initialState = EditableViewState.Initial(Unit)
 ```
 
-#### `Loading(Value, Value)`
+#### `Saving(Value, Value)`
 
-Represents the loading state of the view, indicating that data is currently being edited.
+Represents the saving state of the view, indicating that data is currently being edited.
 
 ```kotlin
-val loadingState = EditableViewState.Loading(current = Unit, target = Unit)
+val savingState = EditableViewState.Saving(current = Unit, target = Unit)
 ```
 
 #### `Success(Value, Value)`
@@ -473,13 +472,13 @@ val state = EditableViewState.Initial(Unit)
 state.isInitial() // Output: true
 ```
 
-#### `isLoading()`
+#### `isSaving()`
 
-Checks if the current state is `EditableViewState.Loading`.
+Checks if the current state is `EditableViewState.Saving`.
 
 ```kotlin
-val state = EditableViewState.Loading(current = Unit, target = Unit)
-state.isLoading() // Output: true
+val state = EditableViewState.Saving(current = Unit, target = Unit)
+state.isSaving() // Output: true
 ```
 
 #### `isSuccess()`
@@ -509,13 +508,13 @@ val state = EditableViewState.Initial(Unit)
 state.onInitial { println("Initial state reached") } // Output: Initial state reached
 ```
 
-#### `onLoading(block: (Value, Value) -> Unit)`
+#### `onSaving(block: (Value, Value) -> Unit)`
 
-Executes the given `block` if the current state is `EditableViewState.Loading`.
+Executes the given `block` if the current state is `EditableViewState.Saving`.
 
 ```kotlin
-val state = EditableViewState.Loading(current = Unit, target = Unit)
-state.onLoading { current, target -> println("Loading state reached") } // Output: Loading state reached
+val state = EditableViewState.Saving(current = Unit, target = Unit)
+state.onSaving { current, target -> println("Saving state reached") } // Output: Saving state reached
 ```
 
 #### `onSuccess(block: (Value, Value) -> Unit)`
@@ -546,7 +545,7 @@ state.relevantValue() // Output: initial
 ```
 
 ```kotlin
-val state = EditableViewState.Loading(current = "current", target = "target")
+val state = EditableViewState.Saving(current = "current", target = "target")
 state.relevantValue() // Output: current
 ```
 
