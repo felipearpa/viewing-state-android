@@ -18,13 +18,13 @@ sealed class EditableViewState<out Value : Any> {
     data class Initial<Value : Any>(val value: Value) : EditableViewState<Value>()
 
     /**
-     * Represents the loading state of the view, indicating that data is currently being edited.
+     * Represents the saving state of the view, indicating that data is currently being edited.
      *
      * @param Value The type of data that the view edits.
      * @property current The current data value.
      * @property target The target data value to be edited.
      */
-    data class Loading<Value : Any>(val current: Value, val target: Value) :
+    data class Saving<Value : Any>(val current: Value, val target: Value) :
         EditableViewState<Value>()
 
     /**
@@ -47,7 +47,7 @@ sealed class EditableViewState<out Value : Any> {
     data class Failure<Value : Any>(
         val current: Value,
         val failed: Value,
-        val exception: Throwable
+        val exception: Throwable,
     ) : EditableViewState<Value>()
 }
 
@@ -67,18 +67,18 @@ fun <Value : Any> EditableViewState<Value>.isInitial(): Boolean {
 }
 
 /**
- * Checks if the current state is [EditableViewState.Loading].
+ * Checks if the current state is [EditableViewState.Saving].
  *
  * @param Value The type of data that the view edits.
- * @return `true` if the state is [EditableViewState.Loading], `false` otherwise.
+ * @return `true` if the state is [EditableViewState.Saving], `false` otherwise.
  */
 @OptIn(ExperimentalContracts::class)
-fun <Value : Any> EditableViewState<Value>.isLoading(): Boolean {
+fun <Value : Any> EditableViewState<Value>.isSaving(): Boolean {
     contract {
-        returns(true) implies (this@isLoading is EditableViewState.Loading)
+        returns(true) implies (this@isSaving is EditableViewState.Saving)
     }
 
-    return this is EditableViewState.Loading
+    return this is EditableViewState.Saving
 }
 
 /**
@@ -126,14 +126,14 @@ fun <Value : Any> EditableViewState<Value>.onInitial(block: (value: Value) -> Un
 }
 
 /**
- * Executes the given [block] if the current state is [EditableViewState.Loading].
+ * Executes the given [block] if the current state is [EditableViewState.Saving].
  *
  * @param Value The type of data that the view edits.
  * @param block The block of code to execute.
  * @return The original [EditableViewState] instance.
  */
-fun <Value : Any> EditableViewState<Value>.onLoading(block: (current: Value, target: Value) -> Unit): EditableViewState<Value> {
-    if (this.isLoading()) {
+fun <Value : Any> EditableViewState<Value>.onSaving(block: (current: Value, target: Value) -> Unit): EditableViewState<Value> {
+    if (this.isSaving()) {
         block(this.current, this.target)
     }
     return this
@@ -189,7 +189,7 @@ fun <Value : Any> EditableViewState<Value>.exceptionOrNull(): Throwable? {
 fun <Value : Any> EditableViewState<Value>.relevantValue() =
     when (this) {
         is EditableViewState.Initial -> this.value
-        is EditableViewState.Loading -> this.current
+        is EditableViewState.Saving -> this.current
         is EditableViewState.Success -> this.succeeded
         is EditableViewState.Failure -> this.current
     }

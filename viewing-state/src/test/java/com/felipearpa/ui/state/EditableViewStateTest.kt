@@ -23,13 +23,13 @@ class EditableViewStateTest {
     @TestFactory
     fun `given a not initial state when checked if initial then initial is not confirmed`() =
         listOf(
-            EditableViewState.Loading(current = Unit, target = Unit),
+            EditableViewState.Saving(current = Unit, target = Unit),
             EditableViewState.Failure(
                 current = Unit,
                 failed = Unit,
-                exception = RuntimeException()
+                exception = RuntimeException(),
             ),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a state of $viewState when checked if initial then initial is not confirmed") {
                 val isInitial = viewState.isInitial()
@@ -38,25 +38,25 @@ class EditableViewStateTest {
         }
 
     @Test
-    fun `given a loading state when checked if loading then loading is confirmed`() {
-        val viewState = EditableViewState.Loading(current = Unit, target = Unit)
-        val isLoading = viewState.isLoading()
+    fun `given a saving state when checked if loading then loading is confirmed`() {
+        val viewState = EditableViewState.Saving(current = Unit, target = Unit)
+        val isLoading = viewState.isSaving()
         isLoading.shouldBeTrue()
     }
 
     @TestFactory
-    fun `given a not loading state when checked if loading then loading is not confirmed`() =
+    fun `given a not saving state when checked if loading then loading is not confirmed`() =
         listOf(
             EditableViewState.Initial(Unit),
             EditableViewState.Failure(
                 current = Unit,
                 failed = Unit,
-                exception = RuntimeException()
+                exception = RuntimeException(),
             ),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a state of $viewState when checked if loading then loading is not confirmed") {
-                val isLoading = viewState.isLoading()
+                val isLoading = viewState.isSaving()
                 isLoading.shouldBeFalse()
             }
         }
@@ -72,12 +72,12 @@ class EditableViewStateTest {
     fun `given a not success state when checked if success then success is not confirmed`() =
         listOf(
             EditableViewState.Initial(Unit),
-            EditableViewState.Loading(current = Unit, target = Unit),
+            EditableViewState.Saving(current = Unit, target = Unit),
             EditableViewState.Failure(
                 current = Unit,
                 failed = Unit,
-                exception = RuntimeException()
-            )
+                exception = RuntimeException(),
+            ),
         ).map { viewState ->
             dynamicTest("given a state of $viewState when checked if success then success is not confirmed") {
                 val isSuccess = viewState.isSuccess()
@@ -90,7 +90,7 @@ class EditableViewStateTest {
         val viewState = EditableViewState.Failure(
             current = Unit,
             failed = Unit,
-            exception = RuntimeException()
+            exception = RuntimeException(),
         )
         val isFailure = viewState.isFailure()
         isFailure.shouldBeTrue()
@@ -100,8 +100,8 @@ class EditableViewStateTest {
     fun `given a not failure state when checked if failure then failure is not confirmed`() =
         listOf(
             EditableViewState.Initial(Unit),
-            EditableViewState.Loading(current = Unit, target = Unit),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Saving(current = Unit, target = Unit),
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a state of $viewState when checked if failure then failure is not confirmed") {
                 val isFailure = viewState.isFailure()
@@ -120,13 +120,13 @@ class EditableViewStateTest {
     }
 
     @Test
-    fun `given a loading state when checked with isLoading then state is smart cast to Loading`() {
+    fun `given a saving state when checked with isLoading then state is smart cast to Loading`() {
         val state: EditableViewState<Unit> =
-            EditableViewState.Loading(current = Unit, target = Unit)
-        if (state.isLoading()) {
+            EditableViewState.Saving(current = Unit, target = Unit)
+        if (state.isSaving()) {
             // If it compiles, the contract is working correctly
-            val castedState: EditableViewState.Loading<Unit> = state
-            castedState.shouldBeInstanceOf<EditableViewState.Loading<Unit>>()
+            val castedState: EditableViewState.Saving<Unit> = state
+            castedState.shouldBeInstanceOf<EditableViewState.Saving<Unit>>()
         }
     }
 
@@ -145,7 +145,7 @@ class EditableViewStateTest {
         val state: EditableViewState<Unit> = EditableViewState.Failure(
             current = Unit,
             failed = Unit,
-            exception = RuntimeException()
+            exception = RuntimeException(),
         )
         if (state.isFailure()) {
             // If it compiles, the contract is working correctly
@@ -159,7 +159,7 @@ class EditableViewStateTest {
         val viewState = EditableViewState.Failure(
             current = Unit,
             failed = Unit,
-            exception = RuntimeException()
+            exception = RuntimeException(),
         )
         val exception = viewState.exceptionOrNull()
         exception.shouldBeInstanceOf<RuntimeException>()
@@ -169,8 +169,8 @@ class EditableViewStateTest {
     fun `given a no failure when checked for exception then the exception is not found`() =
         listOf(
             EditableViewState.Initial(Unit),
-            EditableViewState.Loading(current = Unit, target = Unit),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Saving(current = Unit, target = Unit),
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a $viewState when checked for exception then the exception is not found") {
                 val exception = viewState.exceptionOrNull()
@@ -186,8 +186,8 @@ class EditableViewStateTest {
     }
 
     @Test
-    fun `given a loading state when checked for value then the current value is found`() {
-        val viewState = EditableViewState.Loading(current = "current", target = "target")
+    fun `given a saving state when checked for value then the current value is found`() {
+        val viewState = EditableViewState.Saving(current = "current", target = "target")
         val value = viewState.relevantValue()
         value.shouldBe("current")
     }
@@ -204,7 +204,7 @@ class EditableViewStateTest {
         val viewState = EditableViewState.Failure(
             current = "current",
             failed = "failed",
-            exception = RuntimeException()
+            exception = RuntimeException(),
         )
         val value = viewState.relevantValue()
         value.shouldBe("current")
@@ -222,13 +222,13 @@ class EditableViewStateTest {
     @TestFactory
     fun `given a not initial state when reaction to initial then the action does not run`() =
         listOf(
-            EditableViewState.Loading(current = Unit, target = Unit),
+            EditableViewState.Saving(current = Unit, target = Unit),
             EditableViewState.Failure(
                 current = Unit,
                 failed = Unit,
-                exception = RuntimeException()
+                exception = RuntimeException(),
             ),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a $viewState when reaction to initial then the action does not run") {
                 val block = mockk<(Unit) -> Unit>()
@@ -239,11 +239,11 @@ class EditableViewStateTest {
         }
 
     @Test
-    fun `given a loading state when reacting to it then the expected action runs`() {
+    fun `given a saving state when reacting to it then the expected action runs`() {
         val block = mockk<(Unit, Unit) -> Unit>()
         justRun { block(Unit, Unit) }
-        val viewState = EditableViewState.Loading(current = Unit, target = Unit)
-        viewState.onLoading(block)
+        val viewState = EditableViewState.Saving(current = Unit, target = Unit)
+        viewState.onSaving(block)
         verify { block(Unit, Unit) }
     }
 
@@ -254,14 +254,14 @@ class EditableViewStateTest {
             EditableViewState.Failure(
                 current = Unit,
                 failed = Unit,
-                exception = RuntimeException()
+                exception = RuntimeException(),
             ),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a $viewState when reaction to loading then the action does not run") {
                 val block = mockk<(Unit, Unit) -> Unit>()
                 justRun { block(Unit, Unit) }
-                viewState.onLoading(block)
+                viewState.onSaving(block)
                 verify(exactly = 0) { block(Unit, Unit) }
             }
         }
@@ -279,12 +279,12 @@ class EditableViewStateTest {
     fun `given a not success state when reaction to success then the action does not run`() =
         listOf(
             EditableViewState.Initial(Unit),
-            EditableViewState.Loading(current = Unit, target = Unit),
+            EditableViewState.Saving(current = Unit, target = Unit),
             EditableViewState.Failure(
                 current = Unit,
                 failed = Unit,
-                exception = RuntimeException()
-            )
+                exception = RuntimeException(),
+            ),
         ).map { viewState ->
             dynamicTest("given a $viewState when reaction to success then the action does not run") {
                 val block = mockk<(Unit, Unit) -> Unit>()
@@ -302,7 +302,7 @@ class EditableViewStateTest {
         val viewState = EditableViewState.Failure(
             current = Unit,
             failed = Unit,
-            exception = exception
+            exception = exception,
         )
         viewState.onFailure(block)
         verify { block(Unit, Unit, exception) }
@@ -312,8 +312,8 @@ class EditableViewStateTest {
     fun `given a not failure state when reaction to failure then the action does not run`() =
         listOf(
             EditableViewState.Initial(Unit),
-            EditableViewState.Loading(current = Unit, target = Unit),
-            EditableViewState.Success(old = Unit, succeeded = Unit)
+            EditableViewState.Saving(current = Unit, target = Unit),
+            EditableViewState.Success(old = Unit, succeeded = Unit),
         ).map { viewState ->
             dynamicTest("given a $viewState when reaction to failure then the action does not run") {
                 val block = mockk<(Unit, Unit, Throwable) -> Unit>()
